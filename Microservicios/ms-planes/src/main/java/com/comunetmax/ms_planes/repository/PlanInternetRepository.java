@@ -8,6 +8,6 @@ import java.util.List;
 
 @Repository
 public interface PlanInternetRepository extends JpaRepository<PlanInternet, Long> {
-    // Método mágico: Spring crea el SQL solo por el nombre del método
+    // Metodo mágico: Spring crea el SQL solo por el nombre del metodo
     List<PlanInternet> findByActivoTrue();
 }
