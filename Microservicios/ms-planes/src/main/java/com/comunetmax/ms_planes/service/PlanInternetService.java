@@ -25,7 +25,11 @@ public class PlanInternetService {
         return repository.save(plan);
     }
 
-    // Método simple para poblar base de datos si está vacía (opcional)
+    public void eliminar(Long id) {
+        repository.deleteById(id);
+    }
+
+    // Metodo simple para poblar base de datos si está vacía (opcional)
     public void crearDatosPrueba() {
         if (repository.count() == 0) {
             repository.save(new PlanInternet(null, "Fibra Básica", 100, 50000.0, "Ideal para estudiantes", "HOGAR", true));

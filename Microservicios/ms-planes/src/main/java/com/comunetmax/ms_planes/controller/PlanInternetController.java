@@ -31,4 +31,10 @@ public class PlanInternetController {
         service.crearDatosPrueba();
         return "Datos de prueba creados";
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        service.eliminar(id);
+        return ResponseEntity.noContent().build();
+    }
 }
