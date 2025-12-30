@@ -1,44 +1,97 @@
 version: '3.8'
 
 services:
-  # --- Base de Datos PostgreSQL Centralizada ---
-  db-main:
-    image: postgres:16-alpine
-    container_name: comunet-postgres
+  # ------------------------------------------------------------
+  # 1. BASE DE DATOS (MySQL)
+  # ------------------------------------------------------------
+  mysqldb:
+    image: mysql:8.0
+    container_name: mysqldb
     restart: always
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      # La base de datos por defecto a la que se conecta al inicio
-      # (Las otras se crean con el script init.sql)
-      POSTGRES_DB: postgres
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: db_proyecto_final
     ports:
-      - "5432:5432"
+      - "3306:3306"
     volumes:
-      # Script que se ejecuta solo la primera vez para crear las DBs
-      - ./postgres-init:/docker-entrypoint-initdb.d
-      # Persistencia de datos (para no perderlos al reiniciar)
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - comunet-network
+      - mysql_data:/var/lib/mysql
 
-  # (Opcional) pgAdmin - Interfaz gráfica web para ver tu BD
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: comunet-pgadmin
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@comunet.com
-      PGADMIN_DEFAULT_PASSWORD: root
+  # ------------------------------------------------------------
+  # 2. CONFIG SERVER (Debe iniciar primero)
+  # ------------------------------------------------------------
+  ms-config-server:
+    build: ./ms-config-server
+    container_name: ms-config-server
     ports:
-      - "5050:80"
+      - "8888:8888"
+    environment:
+      # Perfil nativo para que lea archivos locales si no usas Git
+      - SPRING_PROFILES_ACTIVE=native
     depends_on:
-      - db-main
-    networks:
-      - comunet-network
+      - mysqldb
 
-networks:
-  comunet-network:
-    driver: bridge
+  # ------------------------------------------------------------
+  # 3. MICROSERVICIOS DE NEGOCIO
+  # ------------------------------------------------------------
+  ms-usuarios:
+    build: ./ms-usuarios
+    container_name: ms-usuarios
+    restart: on-failure
+    environment:
+      # Sobrescribimos localhost por el nombre del contenedor de la BD
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysqldb:3306/db_proyecto_final
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      # Conexión al Config Server
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://ms-config-server:8888"
+    depends_on:
+      - mysqldb
+      - ms-config-server
+
+  ms-empresas:
+    build: ./ms-empresas
+    container_name: ms-empresas
+    restart: on-failure
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysqldb:3306/db_proyecto_final
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://ms-config-server:8888"
+    depends_on:
+      - mysqldb
+      - ms-config-server
+
+  ms-planes:
+    build: ./ms-planes
+    container_name: ms-planes
+    restart: on-failure
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysqldb:3306/db_proyecto_final
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://ms-config-server:8888"
+    depends_on:
+      - mysqldb
+      - ms-config-server
+
+  # ------------------------------------------------------------
+  # 4. API GATEWAY (El portero)
+  # ------------------------------------------------------------
+  ms-gateway:
+    build: ./ms-gateway
+    container_name: ms-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_CONFIG_IMPORT: "optional:configserver:http://ms-config-server:8888"
+      # Aquí defines dónde está cada servicio para que el Gateway sepa enrutar
+      # (Si usas Eureka esto es automático, si no, se define manual en properties)
+      EUREKA_CLIENT_ENABLED: "false"
+    depends_on:
+      - ms-config-server
+      - ms-usuarios
+      - ms-empresas
+      - ms-planes
 
 volumes:
-  postgres_data:
+  mysql_data:
