@@ -1,7 +1,5 @@
 version: '3.8'
-
 services:
-  # --- Base de Datos PostgreSQL Centralizada ---
   db-main:
     image: postgres:16-alpine
     container_name: comunet-postgres
@@ -9,20 +7,15 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      # La base de datos por defecto a la que se conecta al inicio
-      # (Las otras se crean con el script init.sql)
       POSTGRES_DB: postgres
     ports:
       - "5432:5432"
     volumes:
-      # Script que se ejecuta solo la primera vez para crear las DBs
       - ./postgres-init:/docker-entrypoint-initdb.d
-      # Persistencia de datos (para no perderlos al reiniciar)
       - postgres_data:/var/lib/postgresql/data
     networks:
       - comunet-network
 
-  # (Opcional) pgAdmin - Interfaz gráfica web para ver tu BD
   pgadmin:
     image: dpage/pgadmin4
     container_name: comunet-pgadmin
