@@ -1,5 +1,5 @@
 # 1. Usamos una imagen base ligera de Java 17
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-alpine
 
 # 2. Definimos una variable que apunta a donde Maven deja el ejecutable
 ARG JAR_FILE=target/*.jar
