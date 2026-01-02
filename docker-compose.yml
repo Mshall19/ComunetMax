@@ -1,37 +1,141 @@
 version: '3.8'
+
 services:
+  # -----------------------------------------------------------------
+  # 1. BASE DE DATOS
+  # -----------------------------------------------------------------
   db-main:
-    image: postgres:16-alpine
     container_name: comunet-postgres
+    image: postgres:16-alpine
     restart: always
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: password
       POSTGRES_DB: postgres
     ports:
       - "5432:5432"
     volumes:
-      - ./postgres-init:/docker-entrypoint-initdb.d
+      # ELIMINADO el de pgadmin de aquí
       - postgres_data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
     networks:
       - comunet-network
 
+  # -----------------------------------------------------------------
+  # 2. PGADMIN
+  # -----------------------------------------------------------------
   pgadmin:
-    image: dpage/pgadmin4
     container_name: comunet-pgadmin
+    image: dpage/pgadmin4
+    restart: always
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@comunet.com
       PGADMIN_DEFAULT_PASSWORD: root
     ports:
       - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin # EL VOLUMEN DE PGADMIN VA AQUÍ
     depends_on:
       - db-main
     networks:
       - comunet-network
 
+  # -----------------------------------------------------------------
+  # 3. MICROSERVICIOS (Backend Java)
+  # -----------------------------------------------------------------
+
+  # --- SERVICIO DE USUARIOS (Puerto 8083) ---
+  ms-usuarios:
+    build: ./Microservicios/ms-usuarios
+    container_name: comunet-usuarios
+    restart: always
+    ports:
+      - "8083:8080"
+    environment:
+      - SPRING_CLOUD_CONFIG_ENABLED=false
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://comunet-postgres:5432/db_usuarios
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    depends_on:
+      - db-main
+    networks:
+      - comunet-network
+
+  # --- SERVICIO DE EMPRESAS (Puerto 8082) ---
+  ms-empresas:
+    build: ./Microservicios/ms-empresas
+    container_name: comunet-empresas
+    restart: always
+    ports:
+      - "8082:8080"
+    environment:
+      - SPRING_CLOUD_CONFIG_ENABLED=false
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://comunet-postgres:5432/db_empresas
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    depends_on:
+      - db-main
+    networks:
+      - comunet-network
+
+  # --- SERVICIO DE PLANES (Puerto 8081) ---
+  ms-planes:
+    build: ./Microservicios/ms-planes
+    container_name: comunet-planes
+    restart: always
+    ports:
+      - "8081:8080"
+    environment:
+      - SPRING_CLOUD_CONFIG_ENABLED=false
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://comunet-postgres:5432/db_planes
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+    depends_on:
+      - db-main
+    networks:
+      - comunet-network
+
+
+  # --- API GATEWAY (Puerto Principal 8080) ---
+  ms-gateway:
+    build: ./Microservicios/ms-gateway
+    container_name: comunet-gateway
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ms-config-server
+    networks:
+      - comunet-network
+
+
+  # --- CONFIG SERVER (Puerto Principal 8888) ---
+  ms-config-server:
+    build: ./Microservicios/ms-config-server
+    container_name: comunet-config-server
+    restart: always
+    ports:
+      - "8888:8888"
+    environment:
+      - SPRING_PROFILES_ACTIVE=native
+      - SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS=file:/config/
+    volumes:
+      - ./Microservicios/ms-config-server/src/main/resources/config:/config
+    networks:
+      - comunet-network
+
+# -----------------------------------------------------------------
+# REDES Y VOLUMENES
+# -----------------------------------------------------------------
 networks:
   comunet-network:
     driver: bridge
 
 volumes:
   postgres_data:
+    name: comunetmax_postgres_data
+  pgadmin_data:
+    driver: local
