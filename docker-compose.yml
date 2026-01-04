@@ -99,19 +99,6 @@ services:
       - comunet-network
 
 
-  # --- API GATEWAY (Puerto Principal 8080) ---
-  ms-gateway:
-    build: ./Microservicios/ms-gateway
-    container_name: comunet-gateway
-    restart: always
-    ports:
-      - "8080:8080"
-    depends_on:
-      - ms-config-server
-    networks:
-      - comunet-network
-
-
   # --- CONFIG SERVER (Puerto Principal 8888) ---
   ms-config-server:
     build: ./Microservicios/ms-config-server
@@ -124,6 +111,26 @@ services:
       - SPRING_CLOUD_CONFIG_SERVER_NATIVE_SEARCH_LOCATIONS=file:/config/
     volumes:
       - ./Microservicios/ms-config-server/src/main/resources/config:/config
+    networks:
+      - comunet-network
+    # Agregamos el sensor de salud
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8888/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # --- API GATEWAY (Puerto Principal 8080) ---
+  ms-gateway:
+    build: ./Microservicios/ms-gateway
+    container_name: comunet-gateway
+    restart: always
+    ports:
+      - "8080:8080"
+    depends_on:
+      ms-config-server:
+        condition: service_healthy # <--- Ahora espera a que el sensor de arriba de OK
     networks:
       - comunet-network
 

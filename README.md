@@ -52,6 +52,8 @@ Dado el caso de que de error al iniciar el docker **(esto se debe a que se hayan
 > 
 > # Reconstruir
 > docker-compose up --build
+> 
+> docker-compose restart ms-gateway
 > ```
 
 ## Verificar contenedores
