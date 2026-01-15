@@ -12,6 +12,11 @@ docker-compose up
 > ```bash
 > docker-compose up --build
 > ```
+> En Linux, si hay errores por PostgreSQL local:
+>
+> ```bash
+> sudo systemctl stop postgresql
+> ```
 
 Detener servicios
 
@@ -19,22 +24,14 @@ Detener servicios
 >docker-compose down
 >```
 
+Actualizar el contenido de los contenedores
 
-También puedes iniciar los contenedores manualmente:
+>```bash
+>docker-compose up -d --build "nombre del servicio"
+>```
 
-```bash
-docker start db_usuarios
-docker start db_peliculas
-```
+Compilacion de contenedores
 
-> En Linux, si hay errores por PostgreSQL local:
->
-> ```bash
-> sudo systemctl stop postgresql
-> ```
-> 
-> Compilacion de contenedores
-> 
 > ```bash
 > cd Microservicios && \
 > cd ms-usuarios && ./mvnw clean package -DskipTests && cd .. && \
