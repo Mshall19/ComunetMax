@@ -26,11 +26,16 @@ public class Usuario {
     @Column(nullable = false)
     private String password; // En el futuro la encriptaremos
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String rol; // ADMIN, EMPLEADO, SUPER_ADMIN
+    private Rol rol;
 
     @Column(name = "empresa_id")
     private Long empresaId; // Relación con ms-empresas
 
+    @Column(name = "plan_id", nullable = true)
+    private Long planId;
+
+    @Column(nullable = false)
     private Boolean activo = true;
 }

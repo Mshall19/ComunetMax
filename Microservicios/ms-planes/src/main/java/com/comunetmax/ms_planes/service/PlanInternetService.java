@@ -4,6 +4,7 @@ import com.comunetmax.ms_planes.model.PlanInternet;
 import com.comunetmax.ms_planes.repository.PlanInternetRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import java.util.Optional;
 
 import java.util.List;
 
@@ -29,6 +30,9 @@ public class PlanInternetService {
         repository.deleteById(id);
     }
 
+    public Optional<PlanInternet> buscarPorId(Long id) {
+        return repository.findById(id);
+    }
     // Metodo simple para poblar base de datos si está vacía (opcional)
     public void crearDatosPrueba() {
         if (repository.count() == 0) {

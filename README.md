@@ -32,6 +32,16 @@ docker start db_peliculas
 > ```bash
 > sudo systemctl stop postgresql
 > ```
+> 
+> Compilacion de contenedores
+> 
+> ```bash
+> cd Microservicios && \
+> cd ms-usuarios && ./mvnw clean package -DskipTests && cd .. && \
+> cd ms-planes && ./mvnw clean package -DskipTests && cd .. && \
+> cd ms-empresas && ./mvnw clean package -DskipTests && cd .. && \
+> cd ms-config-server && ./mvnw clean package -DskipTests && cd ../..
+> ```
 
 ---
 
