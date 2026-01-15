@@ -130,7 +130,7 @@ services:
       - "8080:8080"
     depends_on:
       ms-config-server:
-        condition: service_healthy # <--- Ahora espera a que el sensor de arriba de OK
+        condition: service_healthy
     networks:
       - comunet-network
 
