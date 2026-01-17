@@ -1,30 +1,49 @@
 package com.comunetmax.ms_contacto.service;
 
 import com.comunetmax.ms_contacto.dto.ContactoDTO;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 @Service
 public class EmailServiceImpl implements IEmailService {
 
     @Autowired
-    private JavaMailSender mailSender;
+    private JavaMailSender mailSender; // Faltaba esta línea para usar el servidor SMTP
+
+    @Autowired
+    private TemplateEngine templateEngine; // Inyecta el motor de Thymeleaf
 
     @Override
     public void enviarCorreoContacto(ContactoDTO contacto) {
-        SimpleMailMessage message = new SimpleMailMessage();
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, "utf-8");
 
-        // Configuramos los datos del envío
-        message.setTo("juandapeva282@gmail.com"); // El correo corporativo que recibirá el mensaje
-        message.setSubject("Nuevo mensaje de contacto: " + contacto.getNombre());
-        message.setText("Has recibido un nuevo mensaje desde la web:\n\n" +
-                "Nombre: " + contacto.getNombre() + " " + contacto.getApellidos() + "\n" +
-                "Teléfono: " + contacto.getTelefono() + "\n" +
-                "Correo: " + contacto.getCorreoElectronico() + "\n" +
-                "Mensaje: " + contacto.getMensaje());
+            // Preparar datos para la plantilla HTML
+            Context context = new Context();
+            context.setVariable("nombre", contacto.getNombre());
+            context.setVariable("apellidos", contacto.getApellidos());
+            context.setVariable("correo", contacto.getCorreoElectronico());
+            context.setVariable("telefono", contacto.getTelefono());
+            context.setVariable("mensaje", contacto.getMensaje());
 
-        mailSender.send(message);
+            // "email-template" debe coincidir con el nombre de tu archivo .html en resources/templates
+            String htmlContent = templateEngine.process("email-template", context);
+
+            helper.setTo("perez@gmail.com"); // Cámbialo por tu correo real de prueba
+            helper.setSubject("Nuevo Contacto de: " + contacto.getNombre());
+            helper.setText(htmlContent, true); // El 'true' activa el renderizado de HTML
+
+            mailSender.send(mimeMessage);
+
+        } catch (MessagingException e) {
+            throw new RuntimeException("Error al procesar el envío de correo", e);
+        }
     }
 }
