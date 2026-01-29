@@ -1,7 +1,9 @@
 package com.comunetmax.ms_usuarios.controller;
 
+import com.comunetmax.ms_usuarios.dto.UsuarioDTO;
 import com.comunetmax.ms_usuarios.model.Usuario;
 import com.comunetmax.ms_usuarios.service.UsuarioService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,8 +30,8 @@ public class UsuarioController {
     }
 
     @PostMapping
-    public ResponseEntity<Usuario> crear(@RequestBody Usuario usuario) {
-        return ResponseEntity.ok(usuarioService.guardar(usuario));
+    public ResponseEntity<Usuario> crear(@Valid @RequestBody UsuarioDTO UsuarioDTO) {
+        return ResponseEntity.ok(usuarioService.guardar(UsuarioDTO));
     }
 
     @DeleteMapping("/{id}")
