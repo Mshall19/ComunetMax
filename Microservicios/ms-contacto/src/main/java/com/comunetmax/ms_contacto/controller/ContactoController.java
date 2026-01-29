@@ -2,6 +2,7 @@ package com.comunetmax.ms_contacto.controller;
 
 import com.comunetmax.ms_contacto.dto.ContactoDTO;
 import com.comunetmax.ms_contacto.service.IEmailService; // Importación necesaria
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired; // Importación necesaria
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,7 @@ public class ContactoController {
     private IEmailService emailService;
 
     @PostMapping
-    public ResponseEntity<String> enviarMensaje(@RequestBody ContactoDTO contacto) {
+    public ResponseEntity<String> enviarMensaje(@Valid @RequestBody ContactoDTO contacto) {
         // Validación básica de campos obligatorios
         if (contacto.getNombre() == null || contacto.getNombre().isEmpty() ||
                 contacto.getCorreoElectronico() == null || contacto.getCorreoElectronico().isEmpty() ||

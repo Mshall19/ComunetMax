@@ -1,6 +1,8 @@
 package com.comunetmax.ms_usuarios.service;
 
 import com.comunetmax.ms_usuarios.client.PlanCliente;
+import com.comunetmax.ms_usuarios.dto.UsuarioDTO;
+import com.comunetmax.ms_usuarios.model.Rol;
 import com.comunetmax.ms_usuarios.model.Usuario;
 import com.comunetmax.ms_usuarios.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,17 +25,31 @@ public class UsuarioService {
         return usuarioRepository.findById(id);
     }
 
-    public Usuario guardar(Usuario usuario) {
-        // 1. Validación de existencia del Plan vía Feign
+    public Usuario guardar(UsuarioDTO dto) {
+        // 1. Convertir DTO a Entidad (Mapeo)
+        Usuario usuario = new Usuario();
+        usuario.setNombre(dto.getNombre());
+        usuario.setApellido(dto.getApellido());
+        usuario.setEmail(dto.getEmail());
+        usuario.setPassword(dto.getPassword());
+
+        // Asignamos el planId desde el DTO a la entidad
+        usuario.setPlanId(dto.getPlanId());
+
+        // Definir Rol (Si no viene, por defecto es ADMIN o USER según prefieras)
+        usuario.setRol(dto.getRol() != null ? Rol.valueOf(dto.getRol()) : Rol.ADMIN);
+
+        // 2. Validación de existencia del Plan vía Feign
+        // Ahora usuario.getPlanId() ya NO es nulo porque lo asignamos arriba
         if (usuario.getPlanId() != null) {
             try {
-                // Si el plan no existe, Feign lanzará una excepción (ej. 404)
                 planCliente.obtenerPlanPorId(usuario.getPlanId());
             } catch (Exception e) {
-                System.err.println("Error al validar plan: " + e.getMessage());
-                throw new RuntimeException("Error: El Plan con ID " + usuario.getPlanId() + " no existe en el sistema de planes.");
+                throw new RuntimeException("El Plan con ID " + usuario.getPlanId() + " no existe.");
             }
         }
+
+        // 3. Guardar la entidad
         return usuarioRepository.save(usuario);
     }
 
