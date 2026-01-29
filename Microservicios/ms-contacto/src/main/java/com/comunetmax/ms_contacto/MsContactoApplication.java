@@ -1,13 +1,13 @@
-package com.comunetmax.ms_empresas;
+package com.comunetmax.ms_contacto;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class MsEmpresasApplication {
+public class MsContactoApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(MsEmpresasApplication.class, args);
+		SpringApplication.run(MsContactoApplication.class, args);
 	}
 
 }

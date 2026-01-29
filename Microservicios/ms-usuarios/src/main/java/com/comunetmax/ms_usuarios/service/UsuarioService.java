@@ -1,6 +1,6 @@
 package com.comunetmax.ms_usuarios.service;
 
-import com.comunetmax.ms_usuarios.client.PlanCliente; // Asegúrate de que esta ruta sea correcta
+import com.comunetmax.ms_usuarios.client.PlanCliente;
 import com.comunetmax.ms_usuarios.model.Usuario;
 import com.comunetmax.ms_usuarios.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
@@ -53,7 +53,6 @@ public class UsuarioService {
                     usuario.setEmail(usuarioDetalles.getEmail());
                     usuario.setRol(usuarioDetalles.getRol());
                     usuario.setPlanId(usuarioDetalles.getPlanId());
-                    usuario.setEmpresaId(usuarioDetalles.getEmpresaId());
                     return usuarioRepository.save(usuario);
                 })
                 .orElseThrow(() -> new RuntimeException("No se encontró el usuario con ID: " + id));

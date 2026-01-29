@@ -1,10 +1,10 @@
-package com.comunetmax.ms_empresas;
+package com.comunetmax.ms_contacto;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class MsEmpresasApplicationTests {
+class MsContactoApplicationTests {
 
 	@Test
 	void contextLoads() {

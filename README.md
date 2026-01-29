@@ -39,7 +39,6 @@ docker start db_peliculas
 > cd Microservicios && \
 > cd ms-usuarios && ./mvnw clean package -DskipTests && cd .. && \
 > cd ms-planes && ./mvnw clean package -DskipTests && cd .. && \
-> cd ms-empresas && ./mvnw clean package -DskipTests && cd .. && \
 > cd ms-config-server && ./mvnw clean package -DskipTests && cd ../..
 > ```
 
@@ -78,7 +77,6 @@ docker ps
 
 ```bash
 docker logs servicio-usuarios
-docker logs servicio-empresas
 docker logs servicio-planes
 ```
 
@@ -88,14 +86,14 @@ docker logs servicio-planes
 
 **A través del Gateway (puerto 8080):**
 - Usuarios →  http://localhost:8080/ms-usuarios/api/usuarios
-- Empresas → http://localhost:8080/ms-empresas/api/empresas
 - Planes →  http://localhost:8080/ms-planes/api/planes
+- Formularios(no es posible visualizarlo en el navegador) → http://localhost:8080/ms-contacto/api/contacto
 
 
 **Acceso directo a los microservicios:**
 - Usuarios → [http://localhost:8083/api/usuarios](http://localhost:8083/api/usuarios)
-- Empresas → [http://localhost:8082/api/empresas](http://localhost:8082/api/empresas)
 - Planes → [http://localhost:8081/api/planes](http://localhost:8081/api/planes)
+- Formularios(no es posible visualizarlo en el navegador) → [http://localhost:8086/api/contacto](http://localhost:8086/api/contacto)
 
 
 

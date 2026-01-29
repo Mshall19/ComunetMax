@@ -30,9 +30,6 @@ public class Usuario {
     @Column(nullable = false)
     private Rol rol;
 
-    @Column(name = "empresa_id")
-    private Long empresaId; // Relación con ms-empresas
-
     @Column(name = "plan_id", nullable = true)
     private Long planId;
 

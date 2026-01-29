@@ -62,23 +62,6 @@ services:
     networks:
       - comunet-network
 
-  # --- SERVICIO DE EMPRESAS (Puerto 8082) ---
-  ms-empresas:
-    build: ./Microservicios/ms-empresas
-    container_name: comunet-empresas
-    restart: always
-    ports:
-      - "8082:8080"
-    environment:
-      - SPRING_CLOUD_CONFIG_ENABLED=false
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://comunet-postgres:5432/db_empresas
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=password
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-    depends_on:
-      - db-main
-    networks:
-      - comunet-network
 
   # --- SERVICIO DE PLANES (Puerto 8081) ---
   ms-planes:
@@ -98,6 +81,22 @@ services:
     networks:
       - comunet-network
 
+  # --- SERVICIO DE CONTACTO (Puerto 8085) ---
+  ms-contacto:
+    build: ./Microservicios/ms-contacto
+    container_name: comunet-contacto
+    restart: always
+    ports:
+      - "8082:8080"
+    environment:
+      # Le indicamos que busque su config en el contenedor del Config Server
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://ms-config-server:8888
+      - SPRING_APPLICATION_NAME=ms-contacto
+    depends_on:
+      ms-config-server:
+        condition: service_healthy
+    networks:
+      - comunet-network
 
   # --- CONFIG SERVER (Puerto Principal 8888) ---
   ms-config-server:
