@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   # -----------------------------------------------------------------
-  # 1. BASE DE DATOS
+  # 1. BASE DE DATOS (¡Ahora con Healthcheck!)
   # -----------------------------------------------------------------
   db-main:
     container_name: comunet-postgres
@@ -15,11 +15,17 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      # ELIMINADO el de pgadmin de aquí
       - postgres_data:/var/lib/postgresql/data
       - ./postgres-init:/docker-entrypoint-initdb.d
     networks:
       - comunet-network
+    # ESTO ES LO NUEVO QUE NECESITAS:
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s # Le da tiempo a tu PC de despertar
 
   # -----------------------------------------------------------------
   # 2. PGADMIN
@@ -34,17 +40,18 @@ services:
     ports:
       - "5050:80"
     volumes:
-      - pgadmin_data:/var/lib/pgadmin # EL VOLUMEN DE PGADMIN VA AQUÍ
+      - pgadmin_data:/var/lib/pgadmin
     depends_on:
-      - db-main
+      db-main:
+        condition: service_healthy # Espera a que la DB esté lista
     networks:
       - comunet-network
 
   # -----------------------------------------------------------------
-  # 3. MICROSERVICIOS (Backend Java)
+  # 3. MICROSERVICIOS
   # -----------------------------------------------------------------
 
-  # --- SERVICIO DE USUARIOS (Puerto 8083) ---
+  # --- MS USUARIOS (Solo necesita DB) ---
   ms-usuarios:
     build: ./Microservicios/ms-usuarios
     container_name: comunet-usuarios
@@ -58,12 +65,12 @@ services:
       - SPRING_DATASOURCE_PASSWORD=password
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     depends_on:
-      - db-main
+      db-main:
+        condition: service_healthy # <--- CAMBIO IMPORTANTE
     networks:
       - comunet-network
 
-
-  # --- SERVICIO DE PLANES (Puerto 8081) ---
+  # --- MS PLANES (Solo necesita DB) ---
   ms-planes:
     build: ./Microservicios/ms-planes
     container_name: comunet-planes
@@ -77,11 +84,12 @@ services:
       - SPRING_DATASOURCE_PASSWORD=password
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     depends_on:
-      - db-main
+      db-main:
+        condition: service_healthy # <--- CAMBIO IMPORTANTE
     networks:
       - comunet-network
 
-  # --- SERVICIO DE CONTACTO (Puerto 8085) ---
+  # --- MS CONTACTO (Necesita Config Server) ---
   ms-contacto:
     build: ./Microservicios/ms-contacto
     container_name: comunet-contacto
@@ -89,16 +97,15 @@ services:
     ports:
       - "8082:8080"
     environment:
-      # Le indicamos que busque su config en el contenedor del Config Server
       - SPRING_CONFIG_IMPORT=optional:configserver:http://ms-config-server:8888
       - SPRING_APPLICATION_NAME=ms-contacto
     depends_on:
       ms-config-server:
-        condition: service_healthy
+        condition: service_healthy # Este SÍ espera al Config Server
     networks:
       - comunet-network
 
-  # --- SERVICIO DE COBERTURA (Puerto 8084) ---
+  # --- MS COBERTURA (Solo necesita DB) ---
   ms-cobertura:
     build: ./Microservicios/ms-cobertura
     container_name: comunet-cobertura
@@ -112,11 +119,12 @@ services:
       - SPRING_DATASOURCE_PASSWORD=password
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
     depends_on:
-      - db-main
+      db-main:
+        condition: service_healthy # <--- CAMBIO IMPORTANTE
     networks:
       - comunet-network
 
-  # --- CONFIG SERVER (Puerto Principal 8888) ---
+  # --- CONFIG SERVER ---
   ms-config-server:
     build: ./Microservicios/ms-config-server
     container_name: comunet-config-server
@@ -135,9 +143,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 20s
+      start_period: 40s
 
-  # --- API GATEWAY (Puerto Principal 8080) ---
+  # --- GATEWAY (Necesita Config Server) ---
   ms-gateway:
     build: ./Microservicios/ms-gateway
     container_name: comunet-gateway
@@ -146,13 +154,10 @@ services:
       - "8080:8080"
     depends_on:
       ms-config-server:
-        condition: service_healthy
+        condition: service_healthy # Este SÍ espera al Config Server
     networks:
       - comunet-network
 
-# -----------------------------------------------------------------
-# REDES Y VOLUMENES
-# -----------------------------------------------------------------
 networks:
   comunet-network:
     driver: bridge

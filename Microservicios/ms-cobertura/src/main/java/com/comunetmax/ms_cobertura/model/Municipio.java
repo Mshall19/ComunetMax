@@ -21,8 +21,12 @@ public class Municipio {
     @Column(name = "departamento")
     private String departamento;
 
+    @Enumerated(EnumType.STRING)
+    private TipoTecnologia tecnologia;
+
     public Municipio() {
     }
+
 
     public Long getId() {
         return id;

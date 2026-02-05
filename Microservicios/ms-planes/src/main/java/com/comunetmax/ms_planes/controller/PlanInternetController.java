@@ -1,6 +1,9 @@
 package com.comunetmax.ms_planes.controller;
 
+import com.comunetmax.ms_planes.client.CoberturaClient;
+import com.comunetmax.ms_planes.dto.CoberturaDTO;
 import com.comunetmax.ms_planes.model.PlanInternet;
+import com.comunetmax.ms_planes.model.TipoTecnologia;
 import com.comunetmax.ms_planes.service.PlanInternetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +17,7 @@ import java.util.List;
 public class PlanInternetController {
 
     private final PlanInternetService service;
+    private final CoberturaClient coberturaClient;
 
     @GetMapping
     public List<PlanInternet> listar() {
@@ -23,13 +27,6 @@ public class PlanInternetController {
     @PostMapping
     public ResponseEntity<PlanInternet> crear(@RequestBody PlanInternet plan) {
         return ResponseEntity.ok(service.guardar(plan));
-    }
-
-    // Endpoint secreto para crear datos falsos y probar rápido
-    @PostMapping("/seed")
-    public String poblarDatos() {
-        service.crearDatosPrueba();
-        return "Datos de prueba creados";
     }
 
     @DeleteMapping("/{id}")
@@ -43,5 +40,21 @@ public class PlanInternetController {
         return service.buscarPorId(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/municipio/{municipioId}")
+    public ResponseEntity<List<PlanInternet>> obtenerPlanesPorMunicipio(@PathVariable Long municipioId) {
+
+        // 1. Llamamos y recibimos una COBERTURA
+        CoberturaDTO cobertura = coberturaClient.obtenerCoberturaPorMunicipio(municipioId);
+
+        // 2. Validación (Se lee mucho más natural: "si la cobertura no tiene tecnología...")
+        if (cobertura == null || cobertura.getTecnologia() == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // 3. Convertimos y filtramos
+        TipoTecnologia tecnologia = TipoTecnologia.valueOf(cobertura.getTecnologia());
+        return ResponseEntity.ok(service.listarPorTecnologia(tecnologia));
     }
 }

@@ -93,14 +93,15 @@ docker logs servicio-cobertura
 - Usuarios →  http://localhost:8080/ms-usuarios/api/usuarios
 - Planes →  http://localhost:8080/ms-planes/api/planes
 - Formularios(no es posible visualizarlo en el navegador) → http://localhost:8080/ms-contacto/api/contacto
-- Cobertura → http://localhost:8084/api/cobertura/municipios
+- Cobertura → http://localhost:8084/api/cobertura <br>
+  → verificar estado de los municipios http://localhost:8084/api/cobertura/municipios
 
 
 **Acceso directo a los microservicios:**
 - Usuarios → [http://localhost:8083/api/usuarios](http://localhost:8083/api/usuarios)
 - Planes → [http://localhost:8081/api/planes](http://localhost:8081/api/planes)
 - Formularios(no es posible visualizarlo en el navegador) → [http://localhost:8086/api/contacto](http://localhost:8086/api/contacto)
-- Cobertura → [http://localhost:8080/ms-cobertura/api/cobertura/municipios](http://localhost:8080/ms-cobertura/api/cobertura/municipios)
-
+- Cobertura → [http://localhost:8080/ms-cobertura/api/cobertura](http://localhost:8080/ms-cobertura/api/cobertura)<br>
+  → verificar estado de los municipios [http://localhost:8080/ms-cobertura/api/cobertura/municipios](http://localhost:8080/ms-cobertura/api/cobertura/municipios)
 
 
