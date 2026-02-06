@@ -1,0 +1,50 @@
+name: Integracion Continua - ComunetMax
+
+on:
+  push:
+    branches: [ "main", "develop", "feature/*" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v3
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      # 1. MS-COBERTURA
+      - name: Compilar MS-Cobertura
+        run: |
+          echo "Construyendo Cobertura..."
+          cd ms-cobertura
+          mvn clean package -DskipTests
+
+      # 2. MS-PLANES
+      - name: Compilar MS-Planes
+        run: |
+          echo "Construyendo Planes..."
+          cd ms-planes
+          mvn clean package -DskipTests
+
+      # 3. MS-USUARIOS
+      - name: Compilar MS-Usuarios
+        run: |
+          echo "Construyendo Usuarios..."
+          cd ms-usuarios
+          mvn clean package -DskipTests
+
+      # 4. MS-CONTACTO
+      - name: Compilar MS-Contacto
+        run: |
+          echo "Construyendo Contacto..."
+          cd ms-contacto
+          mvn clean package -DskipTests
