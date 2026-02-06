@@ -1,5 +1,6 @@
 package com.comunetmax.ms_cobertura.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -13,6 +14,7 @@ public class Cobertura {
 
     @ManyToOne
     @JoinColumn(name = "municipio_id")
+    @JsonIgnoreProperties({"id"})
     private Municipio municipio;
 
     @Enumerated(EnumType.STRING)
