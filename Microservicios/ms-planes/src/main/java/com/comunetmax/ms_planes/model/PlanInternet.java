@@ -26,6 +26,9 @@ public class PlanInternet {
     @Positive
     private Integer velocidadMb; // Ej: 300
 
+    @Enumerated(EnumType.STRING)
+    private TipoTecnologia tecnologia;
+
     @NotNull
     @Positive
     private Double precio;
