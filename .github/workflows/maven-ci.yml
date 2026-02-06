@@ -25,26 +25,26 @@ jobs:
       - name: Compilar MS-Cobertura
         run: |
           echo "Construyendo Cobertura..."
-          cd ms-cobertura
+          cd Microservicios/ms-cobertura
           mvn clean package -DskipTests
 
       # 2. MS-PLANES
       - name: Compilar MS-Planes
         run: |
           echo "Construyendo Planes..."
-          cd ms-planes
+          cd Microservicios/ms-planes
           mvn clean package -DskipTests
 
       # 3. MS-USUARIOS
       - name: Compilar MS-Usuarios
         run: |
           echo "Construyendo Usuarios..."
-          cd ms-usuarios
+          cd Microservicios/ms-usuarios
           mvn clean package -DskipTests
 
       # 4. MS-CONTACTO
       - name: Compilar MS-Contacto
         run: |
           echo "Construyendo Contacto..."
-          cd ms-contacto
+          cd Microservicios/ms-contacto
           mvn clean package -DskipTests
