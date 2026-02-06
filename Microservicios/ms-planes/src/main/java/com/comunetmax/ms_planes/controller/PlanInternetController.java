@@ -42,6 +42,20 @@ public class PlanInternetController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<PlanInternet> actualizar(@PathVariable Long id, @RequestBody PlanInternet planDetalles) {
+        return service.buscarPorId(id)
+                .map(planExistente -> {
+                    // Actualizamos los campos
+                    planExistente.setNombre(planDetalles.getNombre());
+                    planExistente.setPrecio(planDetalles.getPrecio());
+                    planExistente.setDescripcion(planDetalles.getDescripcion());
+                    // Guardamos los cambios
+                    return ResponseEntity.ok(service.guardar(planExistente));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+
     @GetMapping("/municipio/{municipioId}")
     public ResponseEntity<List<PlanInternet>> obtenerPlanesPorMunicipio(@PathVariable Long municipioId) {
 
