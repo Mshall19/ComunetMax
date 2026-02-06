@@ -56,6 +56,7 @@ public class PlanInternetController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+
     @GetMapping("/municipio/{municipioId}")
     public ResponseEntity<List<PlanInternet>> obtenerPlanesPorMunicipio(@PathVariable Long municipioId) {
 
