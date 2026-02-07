@@ -79,10 +79,10 @@ docker ps
 ## Ver logs
 
 ```bash
-docker logs servicio-usuarios
-docker logs servicio-planes
-docker logs servicio-contacto
-docker logs servicio-cobertura
+docker-compose logs -f ms-usuarios
+docker-compose logs -f ms-planes
+docker-compose logs -f ms-contacto
+docker-compose logs -f ms-cobertura
 ```
 
 ---
