@@ -1,14 +1,15 @@
 package com.comunetmax.ms_cobertura.controller;
 
-import com.comunetmax.ms_cobertura.model.*;
-import com.comunetmax.ms_cobertura.repository.*;
+import com.comunetmax.ms_cobertura.dto.CoberturaDTO;
+import com.comunetmax.ms_cobertura.dto.MunicipioDTO;
+import com.comunetmax.ms_cobertura.model.TipoTecnologia;
+import com.comunetmax.ms_cobertura.service.CoberturaService;
+import com.comunetmax.ms_cobertura.service.MunicipioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
 
 @CrossOrigin(origins = "*")
 @RestController
@@ -16,66 +17,38 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CoberturaController {
 
-    private final CoberturaRepository coberturaRepository;
-    private final MunicipioRepository municipioRepository;
+    private final CoberturaService coberturaService;
+    private final MunicipioService municipioService;
 
-    // 1. CATÁLOGO PURO (Solo devuelve la lista de municipios, sin tecnología)
-    // URL: GET /api/cobertura/municipios
+    // 1. Catálogo de municipios (Usando Service + DTO)
     @GetMapping("/municipios")
-    public List<Municipio> listarMunicipios() {
-        return municipioRepository.findAll();
+    public List<MunicipioDTO> listarMunicipios() {
+        return municipioService.listarTodos();
     }
 
-    // 2. COBERTURAS (Devuelve la relación completa: ID cobertura + Municipio + Tecnología)
-    // URL: GET /api/cobertura
+    // 2. Lista de coberturas (DTO aplanado con MapStruct)
     @GetMapping({"", "/"})
-    public List<Cobertura> listarCoberturas() {
-        return coberturaRepository.findAll();
+    public List<CoberturaDTO> listarCoberturas() {
+        return coberturaService.listarTodas();
     }
 
-    // 3. FILTRO POR DEPARTAMENTO (Solo municipios)
-    @GetMapping("/municipios/dpto/{departamento}")
-    public List<Municipio> listarPorDepartamento(@PathVariable String departamento) {
-        return municipioRepository.findByDepartamento(departamento);
-    }
-
-    // 4. EL METODO "PUENTE" PARA MS-PLANES
-    // Este metodo busca el municipio y averigua si tiene tecnología en la otra tabla.
-    // URL: GET /api/cobertura/municipios/{id}
+    // 3. Metodo Puente para MS-PLANES (Ahora usando DTO de forma limpia)
     @GetMapping("/municipios/{id}")
-    public ResponseEntity<?> obtenerMunicipioConTecnologia(@PathVariable Long id) {
-        return municipioRepository.findById(id).map(muni -> {
-
-            // Buscamos en la tabla 'coberturas' si este municipio tiene algo asignado
-            String tecnologiaEncontrada = coberturaRepository.findByMunicipio(muni)
-                    .map(cob -> cob.getTecnologia().toString())
-                    .orElse(null); // Si no hay cobertura, devolvemos null o "SIN_COBERTURA"
-
-            // Creamos un mapa manual para responder con la estructura que ms-planes necesita
-            Map<String, Object> respuesta = new HashMap<>();
-            respuesta.put("id", muni.getId());
-            respuesta.put("nom_mpio", muni.getNombre()); // Asegúrate que en tu entidad sea getNombre()
-            respuesta.put("dpto", muni.getDepartamento());
-            respuesta.put("tecnologia", tecnologiaEncontrada);
-
-            return ResponseEntity.ok(respuesta);
-        }).orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<CoberturaDTO> obtenerMunicipioConTecnologia(@PathVariable Long id) {
+        // El service se encarga de buscar y el mapper de convertirlo a JSON
+        return ResponseEntity.ok(coberturaService.obtenerPorMunicipioId(id));
     }
 
-    // 5. ASIGNAR TECNOLOGÍA (IMPORTANTE: Sin esto no puedes guardar datos)
-    // URL: POST /api/cobertura/asignar/5?tecnologia=FIBRA_OPTICA
+    // 4. Asignar o Actualizar Tecnología
     @PostMapping("/asignar/{municipioId}")
-    public ResponseEntity<?> asignar(@PathVariable Long municipioId, @RequestParam TipoTecnologia tecnologia) {
+    public ResponseEntity<CoberturaDTO> asignar(@PathVariable Long municipioId, @RequestParam TipoTecnologia tecnologia) {
+        return ResponseEntity.ok(coberturaService.asignarTecnologia(municipioId, tecnologia));
+    }
 
-        return municipioRepository.findById(municipioId).map(muni -> {
-            // Buscamos si ya existe o creamos una nueva cobertura
-            Cobertura cobertura = coberturaRepository.findByMunicipio(muni)
-                    .orElse(new Cobertura());
-
-            cobertura.setMunicipio(muni);
-            cobertura.setTecnologia(tecnologia);
-
-            return ResponseEntity.ok(coberturaRepository.save(cobertura));
-        }).orElse(ResponseEntity.notFound().build());
+    // 5. Eliminar cobertura
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+        coberturaService.eliminar(id);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -2,6 +2,7 @@ package com.comunetmax.ms_usuarios.service;
 
 import com.comunetmax.ms_usuarios.client.PlanCliente;
 import com.comunetmax.ms_usuarios.dto.UsuarioDTO;
+import com.comunetmax.ms_usuarios.mapper.UsuarioMapper;
 import com.comunetmax.ms_usuarios.model.Rol;
 import com.comunetmax.ms_usuarios.model.Usuario;
 import com.comunetmax.ms_usuarios.repository.UsuarioRepository;
@@ -11,11 +12,12 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-@RequiredArgsConstructor // Lombok inyectará automáticamente los campos 'final'
+@RequiredArgsConstructor
 public class UsuarioService {
 
     private final UsuarioRepository usuarioRepository;
-    private final PlanCliente planCliente; // <--- Faltaba declarar esta variable como 'final'
+    private final PlanCliente planCliente;
+    private final UsuarioMapper usuarioMapper; // <--- 1. Inyectamos el nuevo Mapper
 
     public List<Usuario> listarTodos() {
         return usuarioRepository.findAll();
@@ -26,21 +28,15 @@ public class UsuarioService {
     }
 
     public Usuario guardar(UsuarioDTO dto) {
-        // 1. Convertir DTO a Entidad (Mapeo)
-        Usuario usuario = new Usuario();
-        usuario.setNombre(dto.getNombre());
-        usuario.setApellido(dto.getApellido());
-        usuario.setEmail(dto.getEmail());
-        usuario.setPassword(dto.getPassword());
+        // 2. ¡MAGIA! Reemplazamos todos los setNombre, setApellido, etc. con una sola línea
+        Usuario usuario = usuarioMapper.toEntity(dto);
 
-        // Asignamos el planId desde el DTO a la entidad
-        usuario.setPlanId(dto.getPlanId());
+        // 3. Si el rol no venía en el DTO, MapStruct lo deja nulo, así que aplicamos el default:
+        if (usuario.getRol() == null) {
+            usuario.setRol(Rol.ADMIN);
+        }
 
-        // Definir Rol (Si no viene, por defecto es ADMIN o USER según prefieras)
-        usuario.setRol(dto.getRol() != null ? Rol.valueOf(dto.getRol()) : Rol.ADMIN);
-
-        // 2. Validación de existencia del Plan vía Feign
-        // Ahora usuario.getPlanId() ya NO es nulo porque lo asignamos arriba
+        // 4. Validación de existencia del Plan vía Feign
         if (usuario.getPlanId() != null) {
             try {
                 planCliente.obtenerPlanPorId(usuario.getPlanId());
@@ -49,14 +45,12 @@ public class UsuarioService {
             }
         }
 
-        // 3. Guardar la entidad
         return usuarioRepository.save(usuario);
     }
 
     public Usuario actualizar(Long id, Usuario usuarioDetalles) {
         return usuarioRepository.findById(id)
                 .map(usuario -> {
-                    // Si el usuario cambia de plan, validamos el nuevo planId
                     if (usuarioDetalles.getPlanId() != null) {
                         try {
                             planCliente.obtenerPlanPorId(usuarioDetalles.getPlanId());
