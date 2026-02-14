@@ -1,22 +1,20 @@
 package com.comunetmax.ms_cobertura.controller;
 
-import com.comunetmax.ms_cobertura.model.Municipio;
-import com.comunetmax.ms_cobertura.repository.MunicipioRepository;
+import com.comunetmax.ms_cobertura.dto.MunicipioDTO;
+import com.comunetmax.ms_cobertura.service.MunicipioService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/municipios")
+@RequestMapping("/api/municipios") // Mantenemos tu ruta original
 @RequiredArgsConstructor
 public class MunicipioController {
 
-    private final MunicipioRepository municipioRepository;
+    private final MunicipioService municipioService;
 
     @GetMapping
-    public List<Municipio> listarTodos() {
-        return municipioRepository.findAll();
+    public List<MunicipioDTO> listarTodos() {
+        return municipioService.listarTodos();
     }
 }

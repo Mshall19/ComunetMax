@@ -9,7 +9,6 @@ public class RestClientConfig {
 
     @Bean
     public RestClient restClient() {
-        // En lugar de usar el builder inyectado, lo creamos directo
         return RestClient.create();
     }
 }

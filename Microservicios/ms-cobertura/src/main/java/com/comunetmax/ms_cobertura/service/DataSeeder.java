@@ -16,7 +16,7 @@ public class DataSeeder {
     private final MunicipioRepository municipioRepository;
     private final RestTemplate restTemplate = new RestTemplate();
 
-    @PostConstruct // 1. Agregamos esto para que Spring lo ejecute al iniciar
+    @PostConstruct
     public void seed() {
         if (municipioRepository.count() == 0) {
             String url = "https://www.datos.gov.co/resource/gdxc-w37w.json";
@@ -44,7 +44,6 @@ public class DataSeeder {
         }
     }
 
-    // 2. Creamos el metodo cargarManual() para que no dé error
     private void cargarManual() {
         System.out.println("⚠Iniciando carga manual (Plan B)...");
         List<String[]> ciudades = List.of(
