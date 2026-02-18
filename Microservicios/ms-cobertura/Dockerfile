@@ -4,7 +4,7 @@ WORKDIR /app
 # Copiamos tu código fuente al contenedor
 COPY . .
 # Docker ejecuta la compilación por ti
-RUN mvn clean package -DskipTests
+RUN mvn clean package -DskipTests -X
 
 # ETAPA 2: Ejecución (Imagen ligera final)
 FROM eclipse-temurin:17-jdk-alpine

@@ -5,10 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
-/**
- * DTO para capturar los datos del formulario de contacto.
- * Cumple con la norma de no usar entidades de base de datos.
- */
 @Data
 public class ContactoDTO {
 

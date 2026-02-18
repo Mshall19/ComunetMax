@@ -51,45 +51,55 @@ services:
   # 3. MICROSERVICIOS
   # -----------------------------------------------------------------
 
-  # --- MS USUARIOS (Solo necesita DB) ---
+  # --- MS USUARIOS ---
   ms-usuarios:
     build: ./Microservicios/ms-usuarios
-    container_name: comunet-usuarios
+    container_name: ms-usuarios  # Simplificado para que el Gateway lo encuentre
     restart: always
     ports:
-      - "8083:8080"
+      - "8083:8083" # Puerto externo 8083 mapea al interno 8083 definido en Config Server
     environment:
-      - SPRING_CLOUD_CONFIG_ENABLED=false
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://comunet-postgres:5432/db_usuarios
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=password
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_CLOUD_CONFIG_ENABLED=true # ¡ACTIVAR!
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://ms-config-server:8888
     depends_on:
-      db-main:
-        condition: service_healthy # <--- CAMBIO IMPORTANTE
+      ms-config-server:
+        condition: service_healthy
     networks:
       - comunet-network
 
-  # --- MS PLANES (Solo necesita DB) ---
+  # --- MS PLANES ---
   ms-planes:
     build: ./Microservicios/ms-planes
-    container_name: comunet-planes
+    container_name: ms-planes
     restart: always
     ports:
-      - "8081:8080"
+      - "8081:8081" # Coincide con server.port=8081 del Config Server
     environment:
-      - SPRING_CLOUD_CONFIG_ENABLED=false
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://comunet-postgres:5432/db_planes
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=password
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_CLOUD_CONFIG_ENABLED=true # ¡ACTIVAR!
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://ms-config-server:8888
     depends_on:
-      db-main:
-        condition: service_healthy # <--- CAMBIO IMPORTANTE
+      ms-config-server:
+        condition: service_healthy
     networks:
       - comunet-network
 
-  # --- MS CONTACTO (Necesita Config Server) ---
+  # --- MS COBERTURA ---
+  ms-cobertura:
+    build: ./Microservicios/ms-cobertura
+    container_name: ms-cobertura
+    restart: always
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_CLOUD_CONFIG_ENABLED=true # ¡ACTIVAR!
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://ms-config-server:8888
+    depends_on:
+      ms-config-server:
+        condition: service_healthy
+    networks:
+      - comunet-network
+
+  # --- MS CONTACTO ---
   ms-contacto:
     build: ./Microservicios/ms-contacto
     container_name: comunet-contacto
@@ -105,24 +115,7 @@ services:
     networks:
       - comunet-network
 
-  # --- MS COBERTURA (Solo necesita DB) ---
-  ms-cobertura:
-    build: ./Microservicios/ms-cobertura
-    container_name: comunet-cobertura
-    restart: always
-    ports:
-      - "8084:8080"
-    environment:
-      - SPRING_CLOUD_CONFIG_ENABLED=false
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://comunet-postgres:5432/db_cobertura
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=password
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-    depends_on:
-      db-main:
-        condition: service_healthy # <--- CAMBIO IMPORTANTE
-    networks:
-      - comunet-network
+
 
   # --- CONFIG SERVER ---
   ms-config-server:
