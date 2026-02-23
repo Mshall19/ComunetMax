@@ -56,8 +56,8 @@ services:
     build: ./Microservicios/ms-usuarios
     container_name: comunet-usuarios
     restart: always
-    ports:
-      - "8083:8080"
+    # ports:
+    #  - "8083:8080"
     environment:
       - SPRING_CLOUD_CONFIG_ENABLED=false
       - SPRING_DATASOURCE_URL=jdbc:postgresql://comunet-postgres:5432/db_usuarios
@@ -75,8 +75,8 @@ services:
     build: ./Microservicios/ms-planes
     container_name: comunet-planes
     restart: always
-    ports:
-      - "8081:8080"
+    # ports:
+    #   - "8081:8080"
     environment:
       - SPRING_CLOUD_CONFIG_ENABLED=false
       - SPRING_DATASOURCE_URL=jdbc:postgresql://comunet-postgres:5432/db_planes
@@ -94,8 +94,8 @@ services:
     build: ./Microservicios/ms-contacto
     container_name: comunet-contacto
     restart: always
-    ports:
-      - "8082:8080"
+    # ports:
+    #   - "8082:8080"
     environment:
       - SPRING_CONFIG_IMPORT=optional:configserver:http://ms-config-server:8888
       - SPRING_APPLICATION_NAME=ms-contacto
@@ -110,8 +110,8 @@ services:
     build: ./Microservicios/ms-cobertura
     container_name: comunet-cobertura
     restart: always
-    ports:
-      - "8084:8080"
+    # ports:
+    #   - "8084:8080"
     environment:
       - SPRING_CLOUD_CONFIG_ENABLED=false
       - SPRING_DATASOURCE_URL=jdbc:postgresql://comunet-postgres:5432/db_cobertura
