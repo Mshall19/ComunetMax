@@ -35,4 +35,9 @@ public class ContactoController {
 
         return ResponseEntity.ok("Mensaje recibido correctamente. Pronto nos pondremos en contacto.");
     }
+
+    @GetMapping
+    public ResponseEntity<String> info() {
+        return ResponseEntity.ok("El servicio de contacto está activo. Use POST para enviar mensajes.");
+    }
 }
