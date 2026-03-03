@@ -30,27 +30,40 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     public GatewayFilter apply(Config config) {
         return (exchange, chain) -> {
             ServerHttpRequest request = exchange.getRequest();
+            String path = request.getURI().getPath();
 
-            // Log para monitorear en la consola de Docker
-            System.out.println("DEBUG: Petición recibida en: " + request.getURI().getPath());
+            // 1. Mantenemos tu Log
+            System.out.println("DEBUG: Petición recibida en: " + path);
 
-            // 1. Validar presencia del Header
+            // --- ESTA ES LA ÚNICA ADICIÓN ---
+            // Si es documentación, salta directamente al final (chain.filter)
+            if (path.contains("/v3/api-docs") ||
+                    path.contains("/swagger-ui") ||
+                    path.contains("/swagger-resources") ||
+                    path.contains("/webjars")) {
+                return chain.filter(exchange);
+            }
+            // --------------------------------
+
+            // 2. AQUÍ EMPIEZA TU LÓGICA ORIGINAL (INTEGRA AL 100%)
+
+            // ¿Tiene Header? (Tu validación original)
             if (!request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
-                return onError(exchange, "Acceso no autorizado: No se encontró el encabezado de seguridad.", HttpStatus.UNAUTHORIZED);
+                return onError(exchange, "Acceso no autorizado...", HttpStatus.UNAUTHORIZED);
             }
 
             String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
-            // 2. Validar formato Bearer
+            // ¿Es Bearer? (Tu validación original)
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                return onError(exchange, "Acceso no autorizado: El formato del token no es válido.", HttpStatus.UNAUTHORIZED);
+                return onError(exchange, "Acceso no autorizado...", HttpStatus.UNAUTHORIZED);
             }
 
             String token = authHeader.substring(7);
 
-            // 3. Validar integridad/expiración del Token
+            // ¿Es válido el Token? (Tu validación original con jwtUtil)
             if (!jwtUtil.validateToken(token)) {
-                return onError(exchange, "Acceso no autorizado: El token ha expirado o es inválido.", HttpStatus.UNAUTHORIZED);
+                return onError(exchange, "Acceso no autorizado...", HttpStatus.UNAUTHORIZED);
             }
 
             return chain.filter(exchange);
@@ -71,4 +84,6 @@ public class AuthenticationFilter extends AbstractGatewayFilterFactory<Authentic
     }
 
     public static class Config {}
+
+
 }

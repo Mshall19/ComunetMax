@@ -68,11 +68,10 @@ Dado el caso de que de error al iniciar el docker **(esto se debe a que se hayan
 > docker-compose restart ms-gateway
 > ```
 
-## Verificar contenedores
+### Verificar documentaicon Swagger UI
 
-```bash
-docker ps
-```
+→ http://localhost:8080/webjars/swagger-ui/index.html#/municipio-controller/listarTodos
+
 
 ---
 
