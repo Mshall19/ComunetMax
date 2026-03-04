@@ -10,7 +10,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @OpenAPIDefinition(
         info = @Info(title = "ComunetMax API", version = "1.0"),
-        security = @SecurityRequirement(name = "bearerAuth") // Aplica seguridad global en Swagger
+        // ESTA ES LA LÍNEA CLAVE:
+        servers = { @io.swagger.v3.oas.annotations.servers.Server(url = "http://localhost:8080", description = "Gateway Server") },
+        security = @SecurityRequirement(name = "bearerAuth")
 )
 @SecurityScheme(
         name = "bearerAuth",
