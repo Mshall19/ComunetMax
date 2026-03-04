@@ -1,41 +1,56 @@
 # ComunetMax
 
+ComunetMax es un sistema integral que incluye una aplicación Front-end y un Back-end basado en una arquitectura de microservicios con Spring Boot y Spring Cloud. El proyecto gestiona diferentes dominios (Usuarios, Planes, Contacto y Cobertura) en bases de datos independientes, coordinados a través de un API Gateway y un Config Server. Implementa comunicación entre servicios mediante OpenFeign y tolerancia a fallos con Circuit Breaker.
 
-## Iniciar Base de Datos
+## Requisitos Previos
 
-```bash
-docker-compose up
-```
+* Docker y Docker Compose instalados en el sistema.
+* Disponibilidad en el puerto 8080 para el API Gateway y el puerto correspondiente para la aplicación Front-end.
 
-> Si es la primera vez que se ejecuta el proyecto, usar:
+---
+
+## Iniciar el Sistema (Front-end y Back-end)
+
+Para levantar toda la infraestructura, incluyendo el Front-end, las bases de datos, Config Server, API Gateway y los microservicios, ejecuta desde la raíz del proyecto:
+
+> ```bash
+> docker-compose up
+> ```
+
+> Si es la primera vez que se ejecuta el proyecto o has realizado cambios recientes, usar:
 >
 > ```bash
 > docker-compose up --build
 > ```
+>
+> El archivo docker-compose.yml incluye healthchecks, por lo que el Gateway y los microservicios esperarán automáticamente a que el Config Server y las bases de datos estén listos antes de arrancar. El Front-end se conectará al Gateway una vez esté disponible.
 
-Detener servicios
+Para detener todos los servicios:
 
->```bash
->docker-compose down
->```
+> ```bash
+> docker-compose down
+> ```
 
+También puedes iniciar los contenedores de base de datos manualmente:
 
-También puedes iniciar los contenedores manualmente:
-
-```bash
-docker start db_usuarios
-docker start db_peliculas
-docker start db_cobertura
-```
+> ```bash
+> docker start db_usuarios
+> docker start db_planes
+> docker start db_cobertura
+> ```
 
 > En Linux, si hay errores por PostgreSQL local:
 >
 > ```bash
 > sudo systemctl stop postgresql
 > ```
-> 
-> Compilacion de contenedores
-> 
+
+---
+
+## Compilación de Contenedores (Manual)
+
+El siguiente script es por si se va a realizar una limpieza o compilación manual de los archivos .jar antes de levantar Docker. No es un paso obligatorio para el despliegue normal.
+
 > ```bash
 > cd Microservicios && \
 > cd ms-usuarios && ./mvnw clean package -DskipTests && cd .. && \
@@ -47,60 +62,94 @@ docker start db_cobertura
 
 ---
 
-## Limpieza y reconstrucción completa del entorno
+## Limpieza y Reconstrucción Completa del Entorno
 
-Dado el caso de que de error al iniciar el docker **(esto se debe a que se hayan quedado contenedores o volúmenes colgados)**, usar este script para limpiar y reconstruir todo desde cero:
+Dado el caso de que de error al iniciar el docker (esto se debe a que se hayan quedado contenedores o volúmenes colgados), usar este script para limpiar y reconstruir todo desde cero:
+
 > ```bash
-> # Limpieza completa
 > docker-compose down -v
 > docker system prune -a --volumes -f
 > 
-> # Si tienes PostgreSQL local corriendo, detenerlo
 > sudo systemctl stop postgresql
 > 
-> # Verificar que no queden contenedores
 > docker ps -a
 > docker volume ls
 > 
-> # Reconstruir
 > docker-compose up --build
-> 
 > docker-compose restart ms-gateway
 > ```
 
-### Verificar documentaicon Swagger UI
+---
 
-→ http://localhost:8080/webjars/swagger-ui/index.html#/municipio-controller/listarTodos
+## Ver Logs
 
+Para monitorizar el comportamiento de los servicios específicos en tiempo real:
+
+> ```bash
+> docker-compose logs -f front-end
+> docker-compose logs -f ms-usuarios
+> docker-compose logs -f ms-planes
+> docker-compose logs -f ms-contacto
+> docker-compose logs -f ms-cobertura
+> ```
 
 ---
 
-## Ver logs
+## Comprobar Accesos y APIs
 
-```bash
-docker-compose logs -f ms-usuarios
-docker-compose logs -f ms-planes
-docker-compose logs -f ms-contacto
-docker-compose logs -f ms-cobertura
-```
+### Interfaz de Usuario (Front-end)
+
+* Aplicación Web ->
+
+> ```bash
+> http://localhost:PORT
+> ```
+
+(Reemplazar PORT con el puerto asignado al frontend, ej. 80, 3000 o 4200)
+
+### Endpoints del Back-end
+
+En esta arquitectura, el API Gateway (puerto 8080) es el único punto de entrada público. Todo el tráfico hacia los microservicios debe enrutarse a través de él.
+
+A través del Gateway (puerto 8080):
+
+* Usuarios ->
+
+> ```bash
+> http://localhost:8080/ms-usuarios/api/usuarios
+> ```
+
+* Planes ->
+
+> ```bash
+> http://localhost:8080/ms-planes/api/planes
+> ```
+
+* Formularios (consumido por el front-end) ->
+
+> ```bash
+> http://localhost:8080/ms-contacto/api/contacto
+> ```
+
+* Cobertura ->
+
+> ```bash
+> http://localhost:8080/ms-cobertura/api/cobertura/
+> ```
+
+* Verificar estado de los municipios ->
+
+> ```bash
+> http://localhost:8080/ms-cobertura/api/cobertura/municipios
+> ```
 
 ---
 
-## Comprobar APIs
+### Verificar documentación Swagger UI
 
-**A través del Gateway (puerto 8080):**
-- Usuarios →  http://localhost:8080/ms-usuarios/api/usuarios
-- Planes →  http://localhost:8080/ms-planes/api/planes
-- Formularios(no es posible visualizarlo en el navegador) → http://localhost:8080/ms-contacto/api/contacto
-- Cobertura → http://localhost:8080/ms-cobertura/api/cobertura/ <br>
-  → verificar estado de los municipios http://localhost:8084/api/cobertura/municipios
+La documentación interactiva de la API está disponible a través del Gateway. Puedes visualizarla y probar los endpoints en tu navegador:
 
-
-**Acceso directo a los microservicios:**
-- Usuarios → [http://localhost:8083/api/usuarios](http://localhost:8083/api/usuarios)
-- Planes → [http://localhost:8081/api/planes](http://localhost:8081/api/planes)
-- Formularios(no es posible visualizarlo en el navegador) → [http://localhost:8082/api/contacto](http://localhost:8086/api/contacto)
-- Cobertura → [http://localhost:8080/ms-cobertura/api/cobertura](http://localhost:8080/ms-cobertura/api/cobertura)<br>
-  → verificar estado de los municipios [http://localhost:8080/ms-cobertura/api/cobertura/municipios](http://localhost:8080/ms-cobertura/api/cobertura/municipios)
-
+> ```bash
+> http://localhost:8080/webjars/swagger-ui/index.html#/municipio-controller/listarTodos
+> ```
 
